@@ -1,3 +1,9 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
 <title>きいて えらんで うたおう</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
@@ -31,6 +37,7 @@
   color-scheme:dark;
 }
 html,body{height:100%}
+[hidden]{display:none!important}
 body{
   background:var(--bg); color:var(--ink); font-family:var(--font); font-weight:700;
   padding-block:12px;
@@ -41,20 +48,21 @@ body{
 *{box-sizing:border-box}
 button{font-family:inherit; font-weight:900; color:inherit; cursor:pointer; -webkit-tap-highlight-color:transparent}
 button:focus-visible{outline:4px solid var(--primary); outline-offset:3px}
-.app{min-height:100%; max-width:600px; margin:0 auto; display:flex; flex-direction:column; gap:14px}
+.app{position:relative; min-height:100%; max-width:600px; margin:0 auto; display:flex; flex-direction:column; gap:6px}
 
 /* top bar */
-.top{display:flex; align-items:center; gap:12px; min-height:52px}
+.top{display:flex; align-items:center; gap:12px; min-height:48px}
 .dots{flex:1; display:flex; gap:6px; align-items:center; min-width:0}
 .dot{flex:1; max-width:30px; aspect-ratio:1; border-radius:50%; background:var(--line); border:4px solid transparent}
 .dot.cur{border-color:var(--primary)}
 .dot.ok{background:var(--star)}
 .dot.fix{background:var(--surface); border-color:var(--star)}
-.icon-btn{margin-left:auto; width:52px; height:52px; border-radius:50%; border:3px solid var(--line); background:var(--surface); display:grid; place-items:center; flex:none}
+.icon-btn{margin-left:auto; width:48px; height:48px; border-radius:50%; border:3px solid var(--line); background:var(--surface); display:grid; place-items:center; flex:none}
 .icon-btn svg{width:28px; height:28px; fill:none; stroke:var(--ink); stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
 
 /* settings */
 .card{background:var(--surface); border:3px solid var(--line); border-radius:20px; padding:16px; display:flex; flex-direction:column; gap:14px}
+#settings{position:absolute; top:54px; left:0; right:0; z-index:30; max-height:calc(100% - 62px); overflow:auto; box-shadow:0 12px 32px rgba(0,0,0,.28)}
 .card h2{margin:0; font-size:1.05rem; color:var(--muted)}
 .setrow{display:flex; flex-direction:column; gap:6px}
 .setrow .lab{font-size:1rem}
@@ -63,31 +71,31 @@ button:focus-visible{outline:4px solid var(--primary); outline-offset:3px}
 .seg button[aria-pressed="true"]{background:var(--primary); border-color:var(--primary); color:var(--on-primary)}
 
 /* views */
-.view{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center}
-h1{margin:0; font-size:clamp(2rem,9vw,3rem); line-height:1.25; text-wrap:balance; font-weight:900}
-.lead{margin:0; font-size:1.25rem; line-height:1.7; color:var(--muted); max-width:22em; text-wrap:balance}
+.view{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:clamp(8px,2.2dvh,18px); min-height:0; text-align:center}
+h1{margin:0; font-size:clamp(1.7rem,7.5vw,2.4rem); line-height:1.25; text-wrap:balance; font-weight:900}
+.lead{margin:0; font-size:1.1rem; line-height:1.6; color:var(--muted); max-width:22em; text-wrap:balance}
 .hint{margin:0; font-size:1rem; color:var(--oops); font-weight:700}
-.face{width:min(62vw,240px); height:auto; display:block}
+.face{width:min(34vw,120px); width:min(34vw,16dvh,120px); height:auto; display:block}
 .face svg{width:100%; height:auto; display:block; overflow:visible}
 
-.big{min-height:84px; padding:16px 36px; border-radius:999px; border:none; background:var(--primary); color:var(--on-primary); font-size:clamp(1.6rem,7vw,2.1rem); box-shadow:0 6px 0 rgba(0,0,0,.18)}
+.big{min-height:68px; padding:12px 32px; border-radius:999px; border:none; background:var(--primary); color:var(--on-primary); font-size:clamp(1.4rem,6vw,1.9rem); box-shadow:0 6px 0 rgba(0,0,0,.18)}
 .big:active{transform:translateY(3px); box-shadow:0 3px 0 rgba(0,0,0,.18)}
-.big.soft{background:var(--surface); color:var(--ink); border:4px solid var(--line); box-shadow:none; font-size:1.3rem; min-height:68px; padding:12px 24px}
+.big.soft{background:var(--surface); color:var(--ink); border:4px solid var(--line); box-shadow:none; font-size:1.05rem; min-height:56px; padding:8px 16px}
 
 /* quiz */
 .qnum{font-size:1.2rem; color:var(--muted)}
-.listen{display:flex; align-items:center; justify-content:center; gap:14px; width:min(100%,300px); min-height:92px; border-radius:999px; border:none; background:var(--primary); color:var(--on-primary); font-size:2rem; box-shadow:0 6px 0 rgba(0,0,0,.18)}
-.listen svg{width:46px; height:46px; fill:var(--on-primary)}
+.listen{display:flex; align-items:center; justify-content:center; gap:14px; width:min(100%,280px); min-height:72px; border-radius:999px; border:none; background:var(--primary); color:var(--on-primary); font-size:1.7rem; box-shadow:0 6px 0 rgba(0,0,0,.18)}
+.listen svg{width:36px; height:36px; fill:var(--on-primary)}
 .listen.speaking{animation:pulse .8s ease-in-out infinite alternate}
 @keyframes pulse{from{transform:scale(1)}to{transform:scale(1.05)}}
-.msg{min-height:2.4em; font-size:1.7rem; font-weight:900; display:grid; place-items:center}
+.msg{min-height:1.8em; font-size:1.5rem; font-weight:900; display:grid; place-items:center}
 .msg.ok{color:var(--good)}
-.msg.no{color:var(--oops); font-size:1.35rem}
-.choices{width:100%; display:grid; grid-template-columns:1fr; gap:14px}
+.msg.no{color:var(--oops); font-size:1.15rem}
+.choices{width:100%; display:grid; grid-template-columns:1fr; gap:10px}
 .choices.cols2{grid-template-columns:1fr 1fr}
-.choice{display:flex; align-items:center; justify-content:center; gap:16px; min-height:100px; padding:12px 18px; border-radius:26px; border:4px solid var(--line); background:var(--surface); font-size:clamp(2rem,8vw,2.7rem); box-shadow:0 5px 0 var(--line)}
-.choices.cols2 .choice{flex-direction:column; gap:4px; min-height:140px}
-.choice .pic{font-size:3.2rem; line-height:1}
+.choice{display:flex; align-items:center; justify-content:center; gap:16px; min-height:clamp(72px,12dvh,100px); padding:8px 16px; border-radius:24px; border:4px solid var(--line); background:var(--surface); font-size:clamp(1.8rem,7vw,2.4rem); box-shadow:0 5px 0 var(--line)}
+.choices.cols2 .choice{flex-direction:column; gap:2px; min-height:clamp(84px,15dvh,120px)}
+.choice .pic{font-size:2.5rem; line-height:1}
 .choice:active:not(:disabled){transform:translateY(3px); box-shadow:0 2px 0 var(--line)}
 .choice.right{background:var(--good); border-color:var(--good); color:var(--on-good); box-shadow:none; animation:pop .45s ease-out}
 .choice.wrong{background:var(--oops-bg); border-color:var(--oops); opacity:.55; box-shadow:none; animation:wob .35s}
@@ -96,10 +104,10 @@ h1{margin:0; font-size:clamp(2rem,9vw,3rem); line-height:1.25; text-wrap:balance
 @keyframes wob{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
 
 /* result and song */
-.stars{font-size:clamp(2.4rem,12vw,3.4rem); letter-spacing:.2em; color:var(--star); line-height:1}
+.stars{font-size:clamp(2rem,10vw,2.8rem); letter-spacing:.2em; color:var(--star); line-height:1}
 .stagename{font-size:1.15rem; color:var(--muted)}
-.score{font-size:clamp(3rem,16vw,5rem); font-weight:900; line-height:1}
-.singer{position:relative; width:min(66vw,260px)}
+.score{font-size:clamp(2.4rem,12vw,3.6rem); font-weight:900; line-height:1}
+.singer{position:relative; width:min(34vw,120px); width:min(34vw,16dvh,120px)}
 .singer.singing .face{animation:bob .6s ease-in-out infinite alternate}
 @keyframes bob{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-10px) rotate(2deg)}}
 .note{position:absolute; font-size:2rem; color:var(--primary); opacity:0}
@@ -109,13 +117,13 @@ h1{margin:0; font-size:clamp(2rem,9vw,3rem); line-height:1.25; text-wrap:balance
 .note.n3{right:6%; top:-6%; animation-delay:1.6s}
 @keyframes float{0%{opacity:0; transform:translateY(10px)}20%{opacity:1}100%{opacity:0; transform:translateY(-50px) rotate(12deg)}}
 .songtitle{font-size:1.1rem; color:var(--muted)}
-.lyrics{width:100%; min-height:9.5rem; display:flex; flex-direction:column; gap:10px; align-items:center}
-.now{display:flex; flex-wrap:wrap; justify-content:center; gap:2px 6px; font-size:clamp(1.9rem,8.5vw,2.7rem); line-height:1.4; letter-spacing:.04em}
+.lyrics{width:100%; min-height:6.5rem; display:flex; flex-direction:column; gap:10px; align-items:center}
+.now{display:flex; flex-wrap:wrap; justify-content:center; gap:2px 6px; font-size:clamp(1.6rem,7.5vw,2.3rem); line-height:1.4; letter-spacing:.04em}
 .tok{display:inline-block; transition:transform .1s, color .1s; color:var(--muted)}
 .tok.sung{color:var(--primary)}
 .tok.cur{color:var(--primary); transform:scale(1.28)}
-.nxt{font-size:1.3rem; color:var(--muted); opacity:.75}
-.row{display:flex; flex-wrap:wrap; gap:12px; justify-content:center; width:100%}
+.nxt{font-size:1.1rem; color:var(--muted); opacity:.75}
+.row{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; width:100%}
 #confetti{position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:20}
 .cf{position:absolute; top:-5vh; width:12px; height:18px; border-radius:3px; animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(115vh) rotate(720deg)}}
@@ -124,6 +132,8 @@ h1{margin:0; font-size:clamp(2rem,9vw,3rem); line-height:1.25; text-wrap:balance
 }
 </style>
 
+</head>
+<body>
 <div class="app">
   <header class="top">
     <div class="dots" id="dots" hidden></div>
@@ -541,3 +551,6 @@ $('#again').addEventListener('click',function(){startSong(songIdx)});
 $('#other').addEventListener('click',function(){startSong((songIdx+1)%SONGS.length)});
 })();
 </script>
+
+</body>
+</html>
