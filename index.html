@@ -96,6 +96,8 @@ h1{margin:0; font-size:clamp(2rem,9vw,3rem); line-height:1.25; text-wrap:balance
 @keyframes wob{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
 
 /* result and song */
+.stars{font-size:clamp(2.4rem,12vw,3.4rem); letter-spacing:.2em; color:var(--star); line-height:1}
+.stagename{font-size:1.15rem; color:var(--muted)}
 .score{font-size:clamp(3rem,16vw,5rem); font-weight:900; line-height:1}
 .singer{position:relative; width:min(66vw,260px)}
 .singer.singing .face{animation:bob .6s ease-in-out infinite alternate}
@@ -131,11 +133,11 @@ h1{margin:0; font-size:clamp(2rem,9vw,3rem); line-height:1.25; text-wrap:balance
   </header>
 
   <section class="card" id="settings" hidden>
-    <h2>おうちの かた・しえんする かた むけ（つぎの もんだい から かわります）</h2>
+    <h2>おうちの かた・しえんする かた むけ（あたらしく はじめる とき から かわります）</h2>
     <div class="setrow"><div class="lab">ことばの え</div>
       <div class="seg" data-key="pics"><button type="button" data-v="true">だす</button><button type="button" data-v="false">ださない</button></div></div>
-    <div class="setrow"><div class="lab">えらぶ ことばの かず</div>
-      <div class="seg" data-key="n"><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="4">4</button></div></div>
+    <div class="setrow"><div class="lab">ステージの かず（1ステージ 5もん）</div>
+      <div class="seg" data-key="stages"><button type="button" data-v="1">1</button><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="4">4</button><button type="button" data-v="5">5</button></div></div>
     <div class="setrow"><div class="lab">うたが きける じょうけん</div>
       <div class="seg" data-key="strict"><button type="button" data-v="true">ぜんぶ 1かいで せいかい</button><button type="button" data-v="false">まちがえても やりなおせば OK</button></div></div>
   </section>
@@ -143,7 +145,7 @@ h1{margin:0; font-size:clamp(2rem,9vw,3rem); line-height:1.25; text-wrap:balance
   <main class="view" id="v-start">
     <div class="face" id="face-start"></div>
     <h1>きいて えらんで うたおう</h1>
-    <p class="lead">おとを きいて、おなじ ことばを えらぼう。10もん ぜんぶ あたると、うたを うたうよ。</p>
+    <p class="lead">おとを きいて、おなじ ことばを えらぼう。5もん あたると つぎの ステージ。ぜんぶ クリアすると うたを うたうよ。</p>
     <button class="big" id="go" type="button">はじめる</button>
     <p class="hint" id="novoice" hidden>この たんまつでは こえが でないかもしれません。</p>
   </main>
@@ -156,6 +158,14 @@ h1{margin:0; font-size:clamp(2rem,9vw,3rem); line-height:1.25; text-wrap:balance
     </button>
     <div class="msg" id="msg" aria-live="polite"></div>
     <div class="choices" id="choices"></div>
+  </main>
+
+  <main class="view" id="v-stage" hidden>
+    <div class="face" id="face-stage"></div>
+    <h1 id="stagetitle"></h1>
+    <div class="stars" id="stars" aria-hidden="true"></div>
+    <p class="lead" id="stagetext"></p>
+    <button class="big" id="nextstage" type="button">つぎの ステージ</button>
   </main>
 
   <main class="view" id="v-result" hidden>
@@ -187,20 +197,21 @@ h1{margin:0; font-size:clamp(2rem,9vw,3rem); line-height:1.25; text-wrap:balance
 var $=function(s){return document.querySelector(s)};
 
 /* ---------- words ---------- */
-var WORDS=[
-['いぬ','🐶'],['ねこ','🐱'],['さかな','🐟'],['とり','🐦'],['うさぎ','🐰'],['くま','🐻'],['ぞう','🐘'],
-['りんご','🍎'],['みかん','🍊'],['バナナ','🍌'],['ぶどう','🍇'],['すいか','🍉'],['いちご','🍓'],
-['くるま','🚗'],['でんしゃ','🚃'],['ひこうき','✈️'],['ふね','🚢'],
-['さくら','🌸'],['たいよう','☀️'],['つき','🌙'],['ほし','⭐'],['あめ','🌧️'],['ゆきだるま','⛄'],
-['おにぎり','🍙'],['パン','🍞'],['たまご','🥚'],['みず','💧'],
-['ほん','📖'],['かさ','☂️'],['くつ','👟'],['とけい','⏰'],['いえ','🏠'],['き','🌳'],['うみ','🌊'],['やま','⛰️'],
-['マイク','🎤'],['ギター','🎸'],['ピアノ','🎹'],['たいこ','🥁'],['おんぷ','🎵']
-].map(function(a){return {w:a[0],e:a[1]}});
-var TOTAL=10;
+var CATS=[
+ {name:'どうぶつ', list:[['いぬ','🐶'],['ねこ','🐱'],['さかな','🐟'],['とり','🐦'],['うさぎ','🐰'],['くま','🐻'],['ぞう','🐘']]},
+ {name:'たべもの', list:[['りんご','🍎'],['みかん','🍊'],['バナナ','🍌'],['ぶどう','🍇'],['すいか','🍉'],['いちご','🍓'],['おにぎり','🍙'],['パン','🍞'],['たまご','🥚']]},
+ {name:'のりもの と しぜん', list:[['くるま','🚗'],['でんしゃ','🚃'],['ひこうき','✈️'],['ふね','🚢'],['さくら','🌸'],['たいよう','☀️'],['つき','🌙'],['ほし','⭐'],['あめ','🌧️'],['ゆきだるま','⛄'],['うみ','🌊'],['やま','⛰️'],['き','🌳']]},
+ {name:'みのまわり と おんがく', list:[['ほん','📖'],['かさ','☂️'],['くつ','👟'],['とけい','⏰'],['いえ','🏠'],['みず','💧'],['マイク','🎤'],['ギター','🎸'],['ピアノ','🎹'],['たいこ','🥁'],['おんぷ','🎵']]},
+ {name:'ぜんぶ', list:null}
+];
+CATS.forEach(function(c){ if(c.list) c.words=c.list.map(function(a){return {w:a[0],e:a[1]}}); });
+var WORDS=[]; CATS.forEach(function(c){ if(c.words) WORDS=WORDS.concat(c.words); });
+CATS[4].words=WORDS;
+var PER=5, CHOICES=[2,3,3,4,4];
 
 /* ---------- settings ---------- */
-var settings={pics:true,n:3,strict:true};
-try{var s0=JSON.parse(localStorage.getItem('uta-settings')||'null'); if(s0){ if(typeof s0.pics==='boolean')settings.pics=s0.pics; if([2,3,4].indexOf(s0.n)>=0)settings.n=s0.n; if(typeof s0.strict==='boolean')settings.strict=s0.strict; }}catch(e){}
+var settings={pics:true,stages:2,strict:true};
+try{var s0=JSON.parse(localStorage.getItem('uta-settings')||'null'); if(s0){ if(typeof s0.pics==='boolean')settings.pics=s0.pics; if([1,2,3,4,5].indexOf(s0.stages)>=0)settings.stages=s0.stages; if(typeof s0.strict==='boolean')settings.strict=s0.strict; }}catch(e){}
 function saveSettings(){try{localStorage.setItem('uta-settings',JSON.stringify(settings))}catch(e){}}
 function syncSeg(){
   document.querySelectorAll('.seg').forEach(function(seg){
@@ -213,7 +224,7 @@ function syncSeg(){
 document.querySelectorAll('.seg button').forEach(function(b){
   b.addEventListener('click',function(){
     var k=b.parentNode.dataset.key, v=b.dataset.v;
-    settings[k]= (k==='n') ? parseInt(v,10) : (v==='true');
+    settings[k]= (k==='stages') ? parseInt(v,10) : (v==='true');
     saveSettings(); syncSeg();
   });
 });
@@ -231,7 +242,7 @@ function faceSVG(){
   '<path d="M114 92 q12 -15 24 0" fill="none" stroke="var(--face-ink)" stroke-width="6" stroke-linecap="round"/>'+
   '<ellipse class="mouth" cx="100" cy="134" rx="16" ry="5" fill="var(--mouth)"/></svg>';
 }
-['#face-start','#face-result','#face-sing'].forEach(function(id){$(id).innerHTML=faceSVG()});
+['#face-start','#face-stage','#face-result','#face-sing'].forEach(function(id){$(id).innerHTML=faceSVG()});
 var MOUTH={a:[18,17],i:[22,6],u:[9,9],e:[17,10],o:[12,14],n:[10,3],idle:[16,5]};
 function setMouth(v){
   var m=$('#face-sing .mouth'), d=MOUTH[v]||MOUTH.idle; m.setAttribute('rx',d[0]); m.setAttribute('ry',d[1]);
@@ -294,7 +305,7 @@ function hush(){try{window.speechSynthesis&&window.speechSynthesis.cancel()}catc
 
 /* ---------- helpers ---------- */
 function shuffle(a){a=a.slice(); for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t;} return a;}
-var VIEWS=['start','quiz','result','sing'];
+var VIEWS=['start','quiz','stage','result','sing'];
 function show(name){
   VIEWS.forEach(function(v){$('#v-'+v).hidden=(v!==name)});
   $('#dots').hidden=(name!=='quiz');
@@ -313,28 +324,38 @@ function confetti(){
 }
 
 /* ---------- quiz ---------- */
-var order=[], idx=0, q=null, locked=false, qMissed=false, misses=0, results=[], autoT=null;
+var stage=0, qi=0, order=[], q=null, locked=false, qMissed=false, misses=0, stageMiss=0, results=[], autoT=null;
+function totalQ(){return settings.stages*PER}
 function drawDots(){
   var h='';
-  for(var i=0;i<TOTAL;i++){
-    var c='dot'; if(results[i]) c+=' '+results[i]; else if(i===idx) c+=' cur';
+  for(var i=0;i<PER;i++){
+    var c='dot'; if(results[i]) c+=' '+results[i]; else if(i===qi) c+=' cur';
     h+='<span class="'+c+'"></span>';
   }
   $('#dots').innerHTML=h;
 }
 function newGame(){
   clearTimeout(autoT); stopSong(); hush();
-  order=shuffle(WORDS).slice(0,TOTAL); idx=0; misses=0; results=[];
+  stage=0; misses=0; startStage();
+}
+function startStage(){
+  order=shuffle(CATS[stage].words).slice(0,PER); qi=0; stageMiss=0; results=[];
   show('quiz'); renderQ();
 }
 function setMsg(t,c){var m=$('#msg'); m.textContent=t; m.className='msg'+(c?' '+c:'');}
 function renderQ(){
-  q=order[idx]; locked=false; qMissed=false;
-  $('#qnum').textContent='もんだい '+(idx+1)+' / '+TOTAL;
+  q=order[qi]; locked=false; qMissed=false;
+  var cat=CATS[stage], n=CHOICES[stage];
+  $('#qnum').textContent='ステージ '+(stage+1)+'　'+cat.name+'　'+(qi+1)+' / '+PER;
   setMsg('');
-  var others=shuffle(WORDS.filter(function(x){return x!==q && x.w.charAt(0)!==q.w.charAt(0)})).slice(0,settings.n-1);
+  var pool=cat.words.filter(function(x){return x!==q && x.w.charAt(0)!==q.w.charAt(0)});
+  var others=shuffle(pool).slice(0,n-1);
+  if(others.length<n-1){
+    var more=shuffle(WORDS.filter(function(x){return x!==q && others.indexOf(x)<0 && x.w.charAt(0)!==q.w.charAt(0)}));
+    others=others.concat(more.slice(0,n-1-others.length));
+  }
   var opts=shuffle([q].concat(others));
-  var grid=$('#choices'); grid.innerHTML=''; grid.className='choices'+(settings.n===4?' cols2':'');
+  var grid=$('#choices'); grid.innerHTML=''; grid.className='choices'+(n===4?' cols2':'');
   opts.forEach(function(o){
     var b=document.createElement('button'); b.type='button'; b.className='choice';
     b.innerHTML=(settings.pics?'<span class="pic" aria-hidden="true">'+o.e+'</span>':'')+'<span class="word">'+o.w+'</span>';
@@ -356,28 +377,40 @@ function pick(b,o){
     locked=true; b.classList.add('right');
     Array.prototype.forEach.call($('#choices').children,function(x){ if(x!==b) x.disabled=true; });
     chime(true); setMsg('せいかい！','ok');
-    results[idx]= qMissed ? 'fix' : 'ok'; drawDots();
+    results[qi]= qMissed ? 'fix' : 'ok'; drawDots();
     clearTimeout(autoT);
     setTimeout(function(){ if(locked) say(q.w); },700);
     autoT=setTimeout(nextQ,2700);
   } else {
     b.disabled=true; b.classList.add('wrong');
-    if(!qMissed){qMissed=true; misses++;}
+    if(!qMissed){qMissed=true; misses++; stageMiss++;}
     chime(false); setMsg('おしい！ もういちど きいてみよう','no');
     clearTimeout(autoT); autoT=setTimeout(speakQ,800);
   }
 }
 function nextQ(){
-  idx++;
-  if(idx<TOTAL) renderQ(); else finish();
+  qi++;
+  if(qi<PER) renderQ(); else stageDone();
 }
+function stageDone(){
+  if(stage+1<settings.stages){
+    hush(); show('stage'); confetti(); chime(true);
+    var s=stage+1;
+    $('#stagetitle').textContent='ステージ '+s+' クリア！';
+    $('#stars').textContent= stageMiss===0 ? '★★★' : (stageMiss<=2 ? '★★☆' : '★☆☆');
+    $('#stagetext').textContent='つぎは ステージ '+(s+1)+'　'+CATS[stage+1].name;
+    $('#nextstage').textContent='ステージ '+(s+1)+' へ';
+    say('ステージ '+s+' クリア！ つぎは ステージ '+(s+1)+'！',{rate:0.85,pitch:1.3});
+  } else finish();
+}
+$('#nextstage').addEventListener('click',function(){ ac(); hush(); stage++; startStage(); });
 function finish(){
   var perfect = settings.strict ? (misses===0) : true;
   if(perfect){ celebrate(); }
   else {
     hush(); show('result');
-    $('#score').textContent=(TOTAL-misses)+' / '+TOTAL;
-    $('#resulttext').textContent='よく がんばったね！ つぎは ぜんぶ あたるかな？';
+    $('#score').textContent=(totalQ()-misses)+' / '+totalQ();
+    $('#resulttext').textContent='ぜんぶ クリア！ よく がんばったね！ つぎは ぜんぶ いっかいで あたるかな？';
   }
 }
 $('#go').addEventListener('click',function(){
@@ -390,23 +423,20 @@ $('#replay').addEventListener('click',newGame);
 
 /* ---------- songs ---------- */
 var SONGS=[
- {title:'ちょうちょう', beat:0.56, lines:[
-  [['ちょ',67],['う',64],['ちょ',64],['う',64],['ちょ',65],['う',62],['ちょ',62],['う',62,2]],
-  [['な',60],['の',62],['は',64],['に',65],['と',67],['ま',67],['れ',67,2]],
-  [['な',67],['の',64],['は',64],['に',64],['あ',65],['い',62],['た',62],['ら',62,2]],
-  [['さ',60],['く',62],['ら',64],['に',65],['と',67],['ま',64],['れ',60,2]],
-  [['さ',62],['く',62],['ら',62],['の',62],['は',62],['な',64],['の',65,2]],
-  [['は',64],['な',64],['か',64],['ら',64],['は',64],['な',65],['へ',67,2]],
-  [['と',67],['ま',64],['れ',64],['よ',64],['あ',65],['そ',62],['べ',62,2]],
-  [['あ',60],['そ',62],['べ',64],['よ',65],['と',67],['ま',64],['れ',60,2]]
+ {title:'ピンポン ピンポン', beat:0.44, lines:[
+  [['ぴ',67],['ん',72],['ぽ',71],['ん',69],['せ',67],['い',69],['か',71],['い',72,2]],
+  [['き',69],['こ',71],['え',72],['た',71],['お',69],['と',67],['は',64,2]],
+  [['こ',64],['え',67],['に',69],['の',72],['せ',71],['て',69],['ね',67,2]],
+  [['み',67],['ん',69],['な',71],['で',72],['ぱ',71],['ち',69],['ぱ',67],['ち',64,2]],
+  [['ぜ',60],['ん',64],['ぶ',67],['せ',72],['い',71],['か',69],['い',67],['す',69],['ご',71],['い',72],['ね',72,3]]
  ]},
- {title:'ぜんぶ せいかいの うた', beat:0.5, lines:[
-  [['ぜ',60],['ん',60],['も',67],['ん',67],['せ',69],['い',69],['か',67],['い',67,2]],
-  [['す',65],['ご',65],['い',64],['ね',64],['す',62],['ご',62],['い',60],['ね',60,2]],
-  [['う',67],['た',67],['お',65],['う',65],['み',64],['ん',64],['な',62],['で',62,2]],
-  [['た',67],['の',67],['し',65],['く',65],['う',64],['た',64],['お',62],['う',62,2]],
-  [['ぜ',60],['ん',60],['も',67],['ん',67],['せ',69],['い',69],['か',67],['い',67,2]],
-  [['ぱ',65],['ち',65],['ぱ',64],['ち',64],['ぱ',62],['ち',62],['ぱ',60],['ち',60,2]]
+ {title:'おとの ほし', beat:0.62, lines:[
+  [['お',64],['と',67],['の',69],['ほ',72],['し',69],['が',67,2]],
+  [['き',64],['ら',67],['り',64],['き',62],['ら',65],['り',62],['ひ',60],['か',62],['る',64,2]],
+  [['き',67],['み',69],['の',72],['こ',74],['え',72],['も',69,2]],
+  [['ほ',67],['し',65],['に',64],['な',62],['る',64],['よ',60,3]],
+  [['ら',67],['ら',69],['ら',72],['ら',69],['う',67],['た',64],['お',65],['う',62,2]],
+  [['い',67],['つ',69],['で',72],['も',69],['と',67],['も',64],['だ',62],['ち',60,3]]
  ]}
 ];
 var ROW={a:'あかさたなはまやらわがざだばぱゃぁ',i:'いきしちにひみりぎじぢびぴぃ',u:'うくすつぬふむゆるぐずづぶぷゅぅ',e:'えけせてねへめれげぜでべぺぇ',o:'おこそとのほもよろをごぞどぼぽょぉ'};
